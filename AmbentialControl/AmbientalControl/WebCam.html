@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Raspberry Pi &copy; - Arduino &copy; WEB Server</title>
+<style type="text/css">
+body {
+	background-color: #408080;
+}
+.on
+{
+	 height:30px;
+	 width:30px;
+	 background-color:#F00;
+}
+.off
+{
+	 height:30px;
+	 width:30px;
+	 background-color:#AAA;
+}
+
+</style>
+
+<script type="text/javascript">
+var fON=false;
+var fSCAN=false;
+function vsource()
+{
+	v=document.getElementById("vid");
+	v.src="http://"+window.location.hostname+":"+"8081"
+}
+
+function setInit()
+{
+  qAlarm();
+  slid=document.getElementById("ang");
+  slid.value=90;
+  ajax("AN",slid.value);  
+}
+
+function qAlarm()
+{
+  alon=document.getElementById("alarm");
+  alon.className="off";
+  replay=ajax("QA","QA");
+  if (replay=="YAL") alon.className="on";	
+}
+
+function setAngle()
+{
+	slid=document.getElementById("ang");
+	ajax("AN",slid.value);
+}
+
+function autoscan()
+{
+	scan=document.getElementById("scanner");
+	if (!fSCAN) 
+	{
+		ajax("SC","Y");
+		fSCAN=true;scan.value="Auto scanner OFF";
+	}
+	else 
+	{
+		ajax("SC","N");
+		fSCAN=false;scan.value="Auto scanner ON";
+	}
+}
+
+function startWCam()
+{
+	swcam=document.getElementById("swcam");
+	won=document.getElementById("won");
+	if(!fON) {
+		ajaxStartWcam(true);
+        fON=true;vsource();swcam.value="Switch OFF Webcam";won.className="on";}
+	else {
+		ajaxStartWcam(false);
+		fON=false;swcam.value="Switch ON Webcam";won.className="off";}
+}
+
+function stopAlarm()
+{
+	ajax("RA","RA");
+	swal=document.getElementById("alarmoff");
+	alon=document.getElementById("alarm");
+	alon.className="off";
+}
+
+function ajax(cmd,val)
+{
+        var browser = navigator.appName;
+        var params=cmd+"="+val;
+        if (browser == "Microsoft Internet Explorer") 
+	         Req=new ActiveXObject("Microsoft.XMLHTTP"); 
+        else Req=new XMLHttpRequest(); 
+        Req.open("GET","cgi-bin/RandAcmd.sh?"+params,false);
+        Req.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+        Req.send(); 
+		return Req.responseText.trim();
+}
+
+function ajaxStartWcam(start)
+{
+    var browser = navigator.appName;
+		var params;
+    if (start){params="wcam=OK";}
+		else {params="wcam=NOK";}
+    if (browser == "Microsoft Internet Explorer") 
+	     Req=new ActiveXObject("Microsoft.XMLHTTP"); 
+    else Req=new XMLHttpRequest(); 
+    Req.open("GET","cgi-bin/StartWCam.sh?"+params,false);
+    Req.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    Req.send(); 
+		return Req.responseText.trim();	
+}
+</script>
+
+</head>
+<!-- Intestazione -->
+<body onload="vsource();setInit();" onunload="ajaxStartWcam(false);">
+<table width="100%" border="0" cellspacing="10" cellpadding="2">
+  <tr>
+    <td width="10%" align="center"><img src="/images/raspicon.gif" width="50" height="62" /></td>
+    <td width="80%"><h1 style="color:#FFF" align="center">Raspberry Pi &copy; - Arduino &copy; WEB Server</h1></td>
+    <td width="10%" align="center"><img src="/images/arduino.png" width="62" height="62" /></td>
+  </tr>
+</table>
+<!-- Titolo applicazione -->
+<p><H2 style="color:#CF0" align="center">Controllo ambientale con WebCam</H2>
+<!-- Bottone per attivare la Webcam -->
+<input type="button"  style=" font-size:16px; color:#900; width:20%" id="swcam" value="Switch ON Webcam" onclick="startWCam();"/> 
+<!-- Spia webcam attiva -->
+<input id="won" type="text" readonly="true"  class="off"/></p>
+<!-- Immagini dalla webcam -->
+<div align="center">
+<img id="vid" src="http://:8081/" width="320" height="240" style="background:#999; border:#CF3 groove"/>&nbsp;
+</div>
+<!-- Cursore per dirigere la webcam -->
+<p align="center"><input id="ang" type="range"  min="0" max="180" style="width:50%"  onchange="setAngle()" /></p>
+<p align="center" style="color:#CF0">&lt;&lt; left -- Rotate WebCam -- right &gt;&gt;</p>
+<!-- Start/stop auto scanning -->
+<p><input type="button"  style=" font-size:16px; color:#900; width:20%" id="scanner" value="Auto scanner ON" onclick="autoscan();"/> 
+<!-- Bottone per fare il reset dell'allarme -->
+<p><input type="button"  style=" font-size:16px; color:#900; width:20%" id="alarmoff" value="Reset alarm" onclick="stopAlarm();"/> 
+<!-- Spia di allarme attivato -->
+<span style="color:#CF0">Segnalazione allarme </span>
+<input id="alarm" type="text" readonly="true"  class="off"/>
+<input type="button"  style=" font-size:16px; color:#900; width:20%" id="refAlarm" value="Refresh alarm" onclick="qAlarm();"/>
+</p>
+</body>
+</html>
